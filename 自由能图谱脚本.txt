@@ -1,0 +1,90 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.ticker import MultipleLocator
+from matplotlib import cm
+from matplotlib.ticker import FuncFormatter
+from pylab import *
+
+rc('font', family='Times New Roman')
+#f1 = np.loadtxt(r'G:\data\cam-cl-2dproj.xvg', comments = ['#','@'])
+
+cmap = cm.colors.LinearSegmentedColormap.from_list('new_map',[cm.nipy_spectral(i) for i in range(0,256,1)]+[('white')],20)
+fig, ax = plt.subplots(figsize=(8,6), dpi=480)
+
+font1 = {'family':'Times New Roman',
+         'weight':'normal',
+         'size':'18'}
+font2 = {'family':'Times New Roman',
+         'weight':'normal',
+         'size':'20'}
+font3 = {'family':'Times New Roman',
+         'size':'18'}
+
+z, xedge, yedge = np.histogram2d(np.array(PC1_dw), np.array(PC2_dw), bins=57,range=[[0,6], [0, 6]])
+#平均x,y轴
+x = 0.5*(xedge[:-1] + xedge[1:])
+y = 0.5*(yedge[:-1] + yedge[1:])
+
+#值为1.0
+zmin_nonzero = np.min(z[np.where(z > 0)])
+#使得最小化z值为1
+z = np.maximum(z, zmin_nonzero)
+# F = kbTln(p)；-2.479？
+F = -2.578 * np.log(z)
+F -= np.max(F)
+F = np.minimum(F, 0)
+
+extent = [yedge[0], yedge[-1], xedge[0], xedge[-1]]
+#contours = plt.contour(x, y, F.T, 5, colors='black')
+#plt.clabel(contours, inline=True, fontsize=12)
+plt.contourf(x, y, F.T, 200, cmap=cmap,extent=extent,levels=[i for i in range(-20,0,1)]+[0] )
+#plt.colorbar()
+#extent = [yedge[0], yedge[-1], xedge[0], xedge[-1]]
+#contours = plt.contour(x, y, F.T, 5, colors='black')
+#plt.clabel(contours,inline=True,origin='lower', cmap=cm.jet, extent=extent)
+#plt.imshow(F.T, origin='lower', cmap=cm.jet, extent=extent)
+
+#def formatnum(x, pos):
+#    return '%.1fx10$^{-3}$' % (x*1000)
+#formatter = FuncFormatter(formatnum)
+#ax.yaxis.set_major_formatter(formatter)
+
+labels = ax.get_xticklabels() + ax.get_yticklabels()
+for label in labels:
+    label.set_fontname('Times New Roman') 
+        
+plt.tick_params(which="major", labelsize=18,direction='out',width=1.5, length=5)
+plt.tick_params(which="minor", labelsize=18,direction='out',width=1.5, length=3)
+
+ax.spines["left"].set_linewidth(1.5)
+ax.spines["right"].set_linewidth(1.5)
+ax.spines["top"].set_linewidth(1.5)
+ax.spines["bottom"].set_linewidth(1.5)
+
+ax.xaxis.set_major_locator(MultipleLocator(1))
+ax.xaxis.set_minor_locator(MultipleLocator(0.5))
+ax.yaxis.set_major_locator(MultipleLocator(1))
+ax.yaxis.set_minor_locator(MultipleLocator(0.5))
+
+clb = plt.colorbar()
+clb.set_ticks([i for i in range(-20,1,1)][::-2])
+clb.ax.tick_params(labelsize=15,width=1.5)
+clb.set_label("\nFree energy  (kJ/mol)", fontdict=font1)
+
+xlim(0,6)
+ylim(0,6)
+#ax.set_xlabel('Time  (ns)', font2)
+#ax.set_ylabel('RMSD  (nm)', font2)
+#图内对象图标的设置
+#plt.legend(loc = 2,prop=font3,shadow=None)
+
+ax.set_xlabel('RMSD of protein (Å)',font2)
+ax.set_ylabel('RMSD of contacted residues (Å)',font2)
+font4 = {'family':'Times New Roman',
+          'size':'16',
+         'color':'k'}
+#plt.text(8.75,0.115,'a',fontdict=font4)
+plt.savefig('node216_3.png')
+plt.tight_layout()
